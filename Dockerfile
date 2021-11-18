@@ -37,7 +37,9 @@ ARG skip_dev_deps
 RUN useradd --create-home redash
 
 # Ubuntu packages
-RUN apt-get update && \
+RUN sed -i 's/deb.debian.org/mirrors.163.com/g' /etc/apt/sources.list && \
+  sed -i 's/security.debian.org/mirrors.163.com/g' /etc/apt/sources.list && \ 
+  apt-get update && \
   apt-get install -y \
     curl \
     gnupg \
@@ -88,13 +90,13 @@ RUN pip install pip==20.2.4;
 
 # We first copy only the requirements file, to avoid rebuilding on every file change.
 COPY requirements_all_ds.txt ./
-RUN if [ "x$skip_ds_deps" = "x" ] ; then pip install -r requirements_all_ds.txt ; else echo "Skipping pip install -r requirements_all_ds.txt" ; fi
+RUN if [ "x$skip_ds_deps" = "x" ] ; then pip install -r requirements_all_ds.txt -i https://pypi.doubanio.com/simple; else echo "Skipping pip install -r requirements_all_ds.txt -i https://pypi.doubanio.com/simple" ; fi
 
 COPY requirements_bundles.txt requirements_dev.txt ./
-RUN if [ "x$skip_dev_deps" = "x" ] ; then pip install -r requirements_dev.txt ; fi
+RUN if [ "x$skip_dev_deps" = "x" ] ; then pip install -r requirements_dev.txt -i https://pypi.doubanio.com/simple; fi
 
 COPY requirements.txt ./
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt -i https://pypi.doubanio.com/simple
 
 COPY . /app
 COPY --from=frontend-builder /frontend/client/dist /app/client/dist
